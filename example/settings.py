@@ -12,3 +12,5 @@ ROOT_URLCONF = 'example.urls'
 INSTALLED_APPS = (
     'django_qunit',
 )
+
+SECRET_KEY = 'qwerty'

@@ -1,8 +1,8 @@
 from django.shortcuts import render_to_response
 from django.conf import settings
-from django.utils import simplejson
-
+import json
 import os
+
 
 def get_suite_context(request, path):
     full_path = os.path.join(settings.QUNIT_TEST_DIRECTORY, path)
@@ -23,23 +23,25 @@ def get_suite_context(request, path):
 
     # load suite.json if present
     if 'suite.json' in files:
-        file = open(os.path.join(full_path, 'suite.json'), 'r')
-        json = file.read()
-        suite.update(simplejson.loads(json))
+        with open(os.path.join(full_path, 'suite.json'), 'r') as f:
+            content = f.read()
+            suite.update(json.loads(content))
 
     previous_directory = parent_directory(path)
 
     return {
-        'files': [path + file for file in files if file.endswith('js')],
+        'files': [path + ff for ff in files if ff.endswith('js')],
         'previous_directory': previous_directory,
         'in_subdirectory': True and (previous_directory is not None) or False,
         'subsuites': directories,
         'suite': suite,
     }
 
+
 def run_tests(request, path):
     suite_context = get_suite_context(request, path)
     return render_to_response('qunit/index.html', suite_context)
+
 
 def parent_directory(path):
     """
