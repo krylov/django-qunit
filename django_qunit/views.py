@@ -11,36 +11,43 @@ def get_suite_context(request, path):
     suite = {}
 
     # set suite name
-    pieces = path.split('/')
+    pieces = path.split("/")
     if len(pieces) < 2:
-        suite['name'] = 'main'
+        suite["name"] = "main"
     else:
-        suite['name'] = ''.join(pieces[-2])
+        suite["name"] = "".join(pieces[-2])
 
     # defaults
-    suite['extra_urls'] = []
-    suite['extra_media_urls'] = []
+    suite["extra_urls"] = []
+    suite["extra_media_urls"] = []
+
+    package_json = "package.json"
+    if "QUNIT_PACKAGE_JSON" in dir(settings):
+        package_json = settings.QUNIT_PACKAGE_JSON
 
     # load suite.json if present
-    if 'suite.json' in files:
-        with open(os.path.join(full_path, 'suite.json'), 'r') as f:
+    if package_json in files:
+        with open(os.path.join(full_path, package_json), "r") as f:
             content = f.read()
             suite.update(json.loads(content))
 
     previous_directory = parent_directory(path)
 
     return {
-        'files': [path + ff for ff in files if ff.endswith('js')],
-        'previous_directory': previous_directory,
-        'in_subdirectory': True and (previous_directory is not None) or False,
-        'subsuites': directories,
-        'suite': suite,
+        "files": [path + ff for ff in files if ff.endswith("js")],
+        "previous_directory": previous_directory,
+        "in_subdirectory": True and (previous_directory is not None) or False,
+        "subsuites": directories,
+        "suite": suite,
     }
 
 
 def run_tests(request, path):
+    index_html = "index.html"
+    if "QUNIT_INDEX_HTML" in dir(settings):
+        index_html = settings.QUNIT_INDEX_HTML
     suite_context = get_suite_context(request, path)
-    return render_to_response('qunit/index.html', suite_context)
+    return render_to_response(index_html, suite_context)
 
 
 def parent_directory(path):
